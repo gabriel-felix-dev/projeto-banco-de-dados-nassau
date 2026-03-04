@@ -1,38 +1,51 @@
-CREATE DATABASE gestao_eventos;
+CREATE DATABASE IF NOT EXISTS gestao_eventos;
 
 USE gestao_eventos;
 
-CREATE TABLE organizacao(
-    idOrganizacao INT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS organizacao(
+    idOrganizacao INT AUTO_INCREMENT PRIMARY KEY ,
     nome VARCHAR (100) NOT NULL,
-    telefone VARCHAR(100) NOT NULL
-);
-CREATE TABLE bairro(
-    idBairro INT PRIMARY KEY AUTO_INCREMENT,
+    telefone VARCHAR(20) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS bairro(
+    idBairro INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR (100) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS morador(
+    idMorador INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR (100) NOT NULL,
-);
-CREATE TABLE morador(
-    idMorador INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR (100) NOT NULL,
-    cpf VARCHAR(11) NOT NULL,
-    FK_idBairro INT NOT NULL,
-    CONSTRAINT fk_morador_bairro FOREING KEY (FK_idBairro) REFERENCES bairro (idBairro)
-);
-CREATE TABLE evento(
-    idEvento INT PRIMARY KEY AUTO_INCREMENT,
+    cpf VARCHAR(14) NOT NULL UNIQUE,
+    fk_idBairro INT NOT NULL,
+    CONSTRAINT fk_morador_bairro 
+    FOREIGN KEY (fk_idBairro) REFERENCES bairro (idBairro)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS evento(
+    idEvento INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR (100) NOT NULL,
     data_evento DATE NOT NULL, 
     qtd_vagas INT NOT NULL,
-    FK_idOrganizacao INT NOT NULL,
-    CONSTRAINT fk_evento_organizacao FOREING KEY (FK_idOrganizacao) REFERENCES organizacao (idOrganizacao),
-    FK_idBairro INT NOT NULL,
-    CONSTRAINT fk_evento_bairro FOREING KEY (FK_idBairro) REFERENCES bairro (idBairro)
-);
-CREATE TABLE inscricao(
-    idInscricao INT PRIMARY KEY AUTO_INCREMENT,
-    data_evento DATE NOT NULL, 
-    FK_idMorador INT NOT NULL,
-    CONSTRAINT fk_inscricao_morador FOREING KEY (FK_idMorador) REFERENCES morador (idMorador),
-    FK_idEvento INT NOT NULL,
-    CONSTRAINT fk_inscricao_evento FOREING KEY (FK_idEvento) REFERENCES evento (idEvento)
-);
+    fk_idOrganizacao INT NOT NULL,
+    fk_idBairro INT NOT NULL,
+    CONSTRAINT fk_evento_organizacao 
+    FOREIGN KEY (fk_idOrganizacao) REFERENCES organizacao (idOrganizacao),
+    CONSTRAINT fk_evento_bairro 
+    FOREIGN KEY (fk_idBairro) REFERENCES bairro (idBairro),
+    CONSTRAINT chk_evento_qtd_vagas
+    CHECK (qtd_vagas > 0)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS inscricao(
+    idInscricao INT AUTO_INCREMENT PRIMARY KEY,
+    data_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+    fk_idMorador INT NOT NULL,
+    fk_idEvento INT NOT NULL,
+    CONSTRAINT uq_inscricao_evento_morador
+    UNIQUE (fk_idMorador, fk_idEvento),
+    CONSTRAINT fk_inscricao_morador 
+    FOREIGN KEY (fk_idMorador) REFERENCES morador (idMorador),
+    CONSTRAINT fk_inscricao_evento 
+    FOREIGN KEY (fk_idEvento) REFERENCES evento (idEvento)
+) ENGINE=InnoDB;
